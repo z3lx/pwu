@@ -1,7 +1,5 @@
-cmake_minimum_required(VERSION 3.28)
-set(CMAKE_CXX_STANDARD 23)
-
-project(pwu)
+cmake_minimum_required(VERSION 3.28.2)
+project(pwu LANGUAGES CXX)
 
 include(FetchContent)
 
@@ -16,8 +14,51 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(wil)
 
-file(GLOB_RECURSE SOURCES src/*)
+set(HEADER_DIRS
+    include
+)
+
+set(HEADER_FILES
+    include/pwu/Console.hpp
+    include/pwu/Dialogue.hpp
+    include/pwu/File.hpp
+    include/pwu/FileInl.hpp
+    include/pwu/Loader.hpp
+    include/pwu/LoaderInl.hpp
+    include/pwu/Shell.hpp
+    include/pwu/String.hpp
+    include/pwu/StringInl.hpp
+    include/pwu/Version.hpp
+    include/pwu/VirtualKey.hpp
+)
+
+set(SOURCE_FILES
+    src/Console.cpp
+    src/Dialogue.cpp
+    src/Loader.cpp
+    src/Shell.cpp
+    src/Version.cpp
+)
+
 add_library(pwu STATIC)
-target_include_directories(pwu PRIVATE include)
-target_sources(pwu PRIVATE ${SOURCES})
-target_link_libraries(pwu PRIVATE WIL::WIL)
+add_library(pwu::pwu ALIAS pwu)
+
+target_compile_features(pwu PUBLIC cxx_std_23)
+set_target_properties(pwu PROPERTIES
+    CXX_STANDARD_REQUIRED TRUE
+    CXX_EXTENSIONS FALSE
+)
+
+target_sources(pwu
+    PUBLIC
+        FILE_SET HEADERS
+        BASE_DIRS ${HEADER_DIRS}
+        FILES ${HEADER_FILES}
+    PRIVATE
+        ${SOURCE_FILES}
+)
+
+target_link_libraries(pwu
+    PUBLIC WIL::WIL
+    PRIVATE Version.lib
+)

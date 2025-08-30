@@ -28,6 +28,7 @@ set(HEADER_FILES
     include/pwu/Shell.hpp
     include/pwu/String.hpp
     include/pwu/StringInl.hpp
+    include/pwu/TracedException.hpp
     include/pwu/Version.hpp
     include/pwu/VirtualKey.hpp
 )
@@ -37,6 +38,7 @@ set(SOURCE_FILES
     src/Dialogue.cpp
     src/Loader.cpp
     src/Shell.cpp
+    src/TracedException.cpp
     src/Version.cpp
 )
 

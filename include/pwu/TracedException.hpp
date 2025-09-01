@@ -1,13 +1,12 @@
 #pragma once
 
 #include <exception>
+#include <memory>
 #include <source_location>
 #include <span>
-#include <string>
 #include <string_view>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 namespace pwu {
 class TracedException final : public std::exception {
@@ -17,7 +16,7 @@ public:
         std::exception_ptr current,
         std::source_location location
     );
-
+    TracedException(const TracedException& other) noexcept;
     ~TracedException() noexcept override;
 
     [[nodiscard]] std::exception_ptr GetOriginal() const noexcept;
@@ -31,10 +30,8 @@ public:
     [[nodiscard]] const char* what() const noexcept override;
 
 private:
-    std::exception_ptr original;
-    std::exception_ptr cause;
-    std::vector<std::source_location> trace;
-    std::string message;
+    struct Data;
+    std::shared_ptr<Data> data;
 };
 
 template <typename Callable> requires std::is_invocable_v<Callable>

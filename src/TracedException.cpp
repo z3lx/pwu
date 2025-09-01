@@ -9,6 +9,7 @@
 #include <string_view>
 #include <thread>
 #include <typeinfo>
+#include <vector>
 
 namespace {
 void AppendOriginal(std::string& message, const std::exception* original) {
@@ -62,81 +63,92 @@ void AppendTrace(
 } // namespace
 
 namespace pwu {
+struct TracedException::Data {
+    std::exception_ptr original;
+    std::exception_ptr cause;
+    std::vector<std::source_location> trace;
+    std::string message;
+};
+
 TracedException::TracedException(
     const std::exception_ptr previous,
     const std::exception_ptr current,
-    const std::source_location location) {
+    const std::source_location location)
+    : data { std::make_shared<Data>() } {
     // Set original, cause, and trace
     try {
         std::rethrow_exception(current);
     } catch (const TracedException& exception) {
-        original = exception.original;
-        trace.append_range(exception.trace);
-        cause = exception.cause;
+        data->original = exception.data->original;
+        data->trace.append_range(exception.data->trace);
+        data->cause = exception.data->cause;
     } catch (...) {
-        original = current;
+        data->original = current;
         if (previous != nullptr) try {
             std::rethrow_exception(previous);
         } catch (const TracedException&) {
-            cause = previous;
+            data->cause = previous;
         } catch (...) {}
     }
-    trace.push_back(location);
+    data->trace.push_back(location);
 
     // Format message
     try {
-        std::rethrow_exception(original);
+        std::rethrow_exception(data->original);
     } catch (const std::exception& exception) {
-        AppendOriginal(message, &exception);
+        AppendOriginal(data->message, &exception);
     } catch (...) {
-        AppendOriginal(message, nullptr);
+        AppendOriginal(data->message, nullptr);
     }
-    AppendTrace(message, trace);
-    std::exception_ptr nextCause = cause;
+    AppendTrace(data->message, data->trace);
+    std::exception_ptr nextCause = data->cause;
     while (nextCause != nullptr) {
         try {
             std::rethrow_exception(nextCause);
         } catch (const TracedException& exception) {
-            nextCause = exception.cause;
+            nextCause = exception.data->cause;
             try {
-                std::rethrow_exception(exception.original);
+                std::rethrow_exception(exception.data->original);
             } catch (const std::exception& exception) {
-                AppendCause(message, &exception);
+                AppendCause(data->message, &exception);
             } catch (...) {
-                AppendCause(message, nullptr);
+                AppendCause(data->message, nullptr);
             }
-            AppendTrace(message, exception.trace);
+            AppendTrace(data->message, exception.data->trace);
         }
     }
 }
 
+TracedException::TracedException(const TracedException& other) noexcept
+    : data { other.data } {}
+
 TracedException::~TracedException() noexcept = default;
 
 std::exception_ptr TracedException::GetOriginal() const noexcept {
-    return original;
+    return data->original;
 }
 
 std::exception_ptr TracedException::GetCause() const noexcept {
-    return cause;
+    return data->cause;
 }
 
 std::span<const std::source_location> TracedException::GetTrace() const noexcept {
-    return trace;
+    return data->trace;
 }
 
 std::string_view TracedException::GetFormattedTrace() const noexcept {
-    return message;
+    return data->message;
 }
 
 void TracedException::ThrowOriginal() const {
-    std::rethrow_exception(original);
+    std::rethrow_exception(data->original);
 }
 
 void TracedException::ThrowCause() const {
-    std::rethrow_exception(cause);
+    std::rethrow_exception(data->cause);
 }
 
 const char* TracedException::what() const noexcept {
-    return message.c_str();
+    return data->message.c_str();
 }
 } // namespace pwu

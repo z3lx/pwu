@@ -21,6 +21,7 @@ set(HEADER_DIRS
 set(HEADER_FILES
     include/pwu/Console.hpp
     include/pwu/Dialogue.hpp
+    include/pwu/ErrorHandling.hpp
     include/pwu/File.hpp
     include/pwu/FileInl.hpp
     include/pwu/Loader.hpp
@@ -36,6 +37,7 @@ set(HEADER_FILES
 set(SOURCE_FILES
     src/Console.cpp
     src/Dialogue.cpp
+    src/ErrorHandling.cpp
     src/Loader.cpp
     src/Shell.cpp
     src/TracedException.cpp

@@ -34,7 +34,8 @@ private:
     std::shared_ptr<Data> data;
 };
 
-template <typename Callable> requires std::is_invocable_v<Callable>
+template <typename Callable>
+requires std::is_invocable_v<Callable>
 void CatchThrowTraced(
     Callable&& callable,
     const std::source_location location = std::source_location::current()) {
@@ -55,5 +56,17 @@ inline void ThrowCaughtTraced(
     } catch (...) {
         throw TracedException { nullptr, exception, location };
     }
+}
+
+template <typename Exception>
+requires std::is_convertible_v<Exception, std::exception>
+void ThrowTraced(
+    Exception&& exception,
+    const std::source_location location = std::source_location::current()) {
+    const std::exception_ptr previous = std::current_exception();
+    const std::exception_ptr current = std::make_exception_ptr(
+        std::forward<Exception>(exception)
+    );
+    throw TracedException { previous, current, location };
 }
 } // namespace pwu

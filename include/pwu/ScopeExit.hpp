@@ -1,11 +1,9 @@
 #pragma once
 
-#include <cstddef>
-#include <new>
 #include <type_traits>
 #include <utility>
 
-// std::experimental::scope_exit
+// TS v3 std::experimental::scope_exit
 
 namespace pwu {
 template <typename Callable>
@@ -22,18 +20,18 @@ public:
             std::is_nothrow_constructible_v<Callable, T> ||
             std::is_nothrow_constructible_v<Callable, T&>
         )
-        : storage {}
-        , active { true } {
-        if constexpr (!std::is_lvalue_reference_v<T> &&
-            std::is_nothrow_constructible_v<Callable, T>) {
-            new (storage) Callable(std::forward<T>(callable));
-        } else try {
-            new (storage) Callable(callable);
-        } catch (...) {
-            callable();
-            throw;
-        }
-    }
+        : callable([&callable]() -> decltype(auto) {
+            if constexpr (!std::is_lvalue_reference_v<T> &&
+                std::is_nothrow_constructible_v<Callable, T>) {
+                return std::forward<T>(callable);
+            } else try {
+                return callable;
+            } catch (...) {
+                callable();
+                throw;
+            }
+        }())
+        , active { true } {}
 
     ScopeExit(ScopeExit&& other)
         noexcept (
@@ -44,14 +42,14 @@ public:
             std::is_nothrow_move_constructible_v<Callable> ||
             std::is_copy_constructible_v<Callable>
         )
-        : storage {}
+        : callable([&other]() -> decltype(auto) {
+            if constexpr (std::is_nothrow_move_constructible_v<Callable>) {
+                return std::forward<Callable>(other.callable);
+            } else {
+                return other.callable;
+            }
+        }())
         , active { other.active } {
-        auto callable = reinterpret_cast<Callable*>(other.storage);
-        if constexpr (std::is_nothrow_move_constructible_v<Callable>) {
-            new (storage) Callable(std::forward<Callable>(*callable));
-        } else {
-            new (storage) Callable(*callable);
-        }
         other.Release();
     }
 
@@ -65,15 +63,13 @@ public:
     }
 
     ~ScopeExit() noexcept {
-        auto callable = reinterpret_cast<Callable*>(storage);
         if (active) {
-            callable->operator()();
+            callable();
         }
-        callable->~Callable();
     }
 
 private:
-    alignas(Callable) std::byte storage[sizeof(Callable)];
+    Callable callable;
     bool active;
 };
 

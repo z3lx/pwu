@@ -1,7 +1,5 @@
 #include "pwu/Loader.hpp"
 
-#include <wil/result.h>
-
 #include <array>
 #include <filesystem>
 #include <span>
@@ -19,7 +17,7 @@ fs::path GetModuleFilePath(const HMODULE module) {
         buffer.data(),
         buffer.size()
     );
-    THROW_LAST_ERROR_IF(
+    ThrowLastWin32ErrorIf(
         stringSize == buffer.size() ||
         stringSize == 0
     );
@@ -28,7 +26,7 @@ fs::path GetModuleFilePath(const HMODULE module) {
 
 fs::path GetModuleFilePath(const void* address) {
     HMODULE module {};
-    THROW_IF_WIN32_BOOL_FALSE(GetModuleHandleExA(
+    ThrowIfWin32BoolFalse(GetModuleHandleExA(
         GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
         GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
         static_cast<LPCTSTR>(address), &module
@@ -38,7 +36,7 @@ fs::path GetModuleFilePath(const void* address) {
 
 std::filesystem::path GetModuleFilePath(const std::string_view moduleName) {
     HMODULE module {};
-    THROW_IF_WIN32_BOOL_FALSE(GetModuleHandleExA(
+    ThrowIfWin32BoolFalse(GetModuleHandleExA(
         GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
         moduleName.data(), &module
     ));
@@ -47,7 +45,7 @@ std::filesystem::path GetModuleFilePath(const std::string_view moduleName) {
 
 std::filesystem::path GetModuleFilePath(const std::wstring_view moduleName) {
     HMODULE module {};
-    THROW_IF_WIN32_BOOL_FALSE(GetModuleHandleExW(
+    ThrowIfWin32BoolFalse(GetModuleHandleExW(
         GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
         moduleName.data(), &module
     ));

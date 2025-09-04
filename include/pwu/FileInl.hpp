@@ -1,8 +1,7 @@
 #pragma once
 
+#include "pwu/ErrorHandling.hpp"
 #include "pwu/File.hpp"
-
-#include <wil/result.h>
 
 #include <algorithm>
 #include <cstdint>
@@ -24,13 +23,13 @@ ContiguousContainer ReadFile(const HANDLE fileHandle) {
 
 template <typename ContiguousContainer>
 void ReadFile(const HANDLE fileHandle, ContiguousContainer& buffer) {
-    THROW_IF_WIN32_BOOL_FALSE(::SetFilePointerEx(
+    ThrowIfWin32BoolFalse(SetFilePointerEx(
         fileHandle, {}, nullptr, FILE_BEGIN
     ));
 
     // Calculate buffer size
     LARGE_INTEGER fileSize {};
-    THROW_IF_WIN32_BOOL_FALSE(::GetFileSizeEx(fileHandle, &fileSize));
+    ThrowIfWin32BoolFalse(GetFileSizeEx(fileHandle, &fileSize));
     const auto bufferSize = static_cast<size_t>(fileSize.QuadPart);
     using BufferElementT = typename ContiguousContainer::value_type;
     const size_t bufferElementCount =
@@ -46,7 +45,7 @@ void ReadFile(const HANDLE fileHandle, ContiguousContainer& buffer) {
             bufferSize - bufferSizeOffset
         ));
         DWORD bytesRead = 0;
-        THROW_IF_WIN32_BOOL_FALSE(::ReadFile(
+        ThrowIfWin32BoolFalse(::ReadFile(
             fileHandle,
             bufferChunkAddress,
             bufferChunkSize,
@@ -59,10 +58,10 @@ void ReadFile(const HANDLE fileHandle, ContiguousContainer& buffer) {
 
 template <typename ContiguousContainer>
 void WriteFile(const HANDLE fileHandle, const ContiguousContainer& buffer) {
-    THROW_IF_WIN32_BOOL_FALSE(::SetFilePointerEx(
+    ThrowIfWin32BoolFalse(SetFilePointerEx(
         fileHandle, {}, nullptr, FILE_BEGIN
     ));
-    THROW_IF_WIN32_BOOL_FALSE(::SetEndOfFile(fileHandle));
+    ThrowIfWin32BoolFalse(SetEndOfFile(fileHandle));
     AppendFile(fileHandle, buffer);
 }
 
@@ -79,7 +78,7 @@ void AppendFile(const HANDLE fileHandle, const ContiguousContainer& buffer) {
             bufferSize - bufferSizeOffset
         ));
         DWORD bytesTransferred = 0;
-        THROW_IF_WIN32_BOOL_FALSE(::WriteFile(
+        ThrowIfWin32BoolFalse(::WriteFile(
             fileHandle,
             bufferChunkAddress,
             bufferChunkSize,

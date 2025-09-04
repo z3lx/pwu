@@ -1,9 +1,9 @@
 #pragma once
 
+#include "pwu/ErrorHandling.hpp"
 #include "pwu/Loader.hpp"
-
-#include <wil/resource.h>
-#include <wil/result.h>
+#include "pwu/Resource.hpp"
+#include "pwu/ScopeExit.hpp"
 
 #include <algorithm>
 #include <cstdint>
@@ -27,18 +27,19 @@ void LoadRemoteLibrary(
 
     // Adjust privileges
     LUID luid {};
-    THROW_IF_WIN32_BOOL_FALSE(LookupPrivilegeValueA(
+    ThrowIfWin32BoolFalse(LookupPrivilegeValueA(
         nullptr,
         "SeDebugPrivilege", // SE_DEBUG_NAME 20L
         &luid
     ));
 
-    wil::unique_handle token {};
-    THROW_IF_WIN32_BOOL_FALSE(OpenProcessToken(
+    HANDLE rawToken = nullptr;
+    ThrowIfWin32BoolFalse(OpenProcessToken(
         GetCurrentProcess(),
         TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
-        token.put()
+        &rawToken
     ));
+    const UniqueHandle token = MakeUniqueHandle(rawToken);
 
     TOKEN_PRIVILEGES newPrivileges {
         .PrivilegeCount = 1,
@@ -49,34 +50,34 @@ void LoadRemoteLibrary(
     };
     TOKEN_PRIVILEGES oldPrivileges {};
     DWORD returnLength = 0;
-    THROW_IF_WIN32_BOOL_FALSE(AdjustTokenPrivileges(
-        token.get(),
+    ThrowIfWin32BoolFalse(AdjustTokenPrivileges(
+        token.Get(),
         FALSE,
         &newPrivileges,
         sizeof(newPrivileges),
         &oldPrivileges,
         &returnLength
     ));
-    const auto privilegesCleanup = wil::scope_exit([&] {
+    const ScopeExit privilegeCleanup { [&]() noexcept {
         AdjustTokenPrivileges(
-            token.get(),
+            token.Get(),
             FALSE,
             &oldPrivileges,
             returnLength,
             nullptr,
             nullptr
         );
-    });
-    THROW_WIN32_IF(
+    } };
+    ThrowWin32ErrorIf(
         ERROR_PRIVILEGE_NOT_HELD,
         GetLastError() == ERROR_NOT_ALL_ASSIGNED
     );
 
     // Get LoadLibraryW
     const HMODULE kernel32 = GetModuleHandleA("kernel32.dll");
-    THROW_LAST_ERROR_IF_NULL(kernel32);
+    ThrowLastWin32ErrorIfNull(kernel32);
     const FARPROC loadLibraryW = GetProcAddress(kernel32, "LoadLibraryW");
-    THROW_LAST_ERROR_IF_NULL(loadLibraryW);
+    ThrowLastWin32ErrorIfNull(loadLibraryW);
 
     // Calculate buffer size
     const std::filesystem::path& longestFilePath = *std::ranges::max_element(
@@ -96,19 +97,19 @@ void LoadRemoteLibrary(
         MEM_COMMIT | MEM_RESERVE,
         PAGE_READWRITE
     );
-    THROW_LAST_ERROR_IF_NULL(buffer);
-    const auto bufferCleanup = wil::scope_exit([=] {
+    ThrowLastWin32ErrorIfNull(buffer);
+    ScopeExit bufferCleanup { [=]() noexcept {
         VirtualFreeEx(
             processHandle,
             buffer,
             0,
             MEM_RELEASE
         );
-    });
+    } };
 
     for (const std::filesystem::path& dllPath : libraryPaths) {
         // Write dll path to process
-        THROW_IF_WIN32_BOOL_FALSE(WriteProcessMemory(
+        ThrowIfWin32BoolFalse(WriteProcessMemory(
             processHandle,
             buffer,
             dllPath.c_str(),
@@ -117,7 +118,7 @@ void LoadRemoteLibrary(
         ));
 
         // Create thread to load dll
-        const wil::unique_handle thread { CreateRemoteThread(
+        const UniqueHandle thread = MakeUniqueHandle(CreateRemoteThread(
             processHandle,
             nullptr,
             0,
@@ -125,9 +126,9 @@ void LoadRemoteLibrary(
             buffer,
             0,
             nullptr
-        ) };
-        THROW_LAST_ERROR_IF_NULL(thread.get());
-        WaitForSingleObject(thread.get(), INFINITE);
+        ));
+        ThrowLastWin32ErrorIfNull(thread.Get());
+        WaitForSingleObject(thread.Get(), INFINITE);
     }
 }
 } // namespace pwu

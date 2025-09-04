@@ -1,6 +1,5 @@
 #include "pwu/Dialogue.hpp"
-
-#include <wil/result.h>
+#include "pwu/ErrorHandling.hpp"
 
 #include <array>
 #include <filesystem>
@@ -37,7 +36,7 @@ pwu::MessageBoxResult ShowMessageBox(
         static_cast<UINT>(button) |
         static_cast<UINT>(defaultButton)
     );
-    THROW_LAST_ERROR_IF(result == 0);
+    pwu::ThrowLastWin32ErrorIf(result == 0);
     return static_cast<pwu::MessageBoxResult>(result);
 }
 } // namespace
@@ -105,7 +104,7 @@ std::filesystem::path OpenFileDialogue(
             OFN_EXPLORER |
             OFN_NOCHANGEDIR
     };
-    THROW_IF_WIN32_BOOL_FALSE(GetOpenFileNameW(&ofn));
+    ThrowIfWin32BoolFalse(GetOpenFileNameW(&ofn));
     return std::filesystem::path { buffer.data() };
 }
 } // namespace pwu

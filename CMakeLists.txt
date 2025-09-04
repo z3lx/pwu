@@ -1,19 +1,6 @@
 cmake_minimum_required(VERSION 3.28.2)
 project(pwu LANGUAGES CXX)
 
-include(FetchContent)
-
-add_compile_definitions(WIL_EXCEPTION_MODE=1)
-set(WIL_BUILD_PACKAGING OFF)
-set(WIL_BUILD_TESTS OFF)
-FetchContent_Declare(
-    wil
-    GIT_REPOSITORY https://github.com/microsoft/wil.git
-    GIT_TAG v1.0.250325.1
-    GIT_SHALLOW TRUE
-)
-FetchContent_MakeAvailable(wil)
-
 set(HEADER_DIRS
     include
 )
@@ -66,6 +53,5 @@ target_sources(pwu
 )
 
 target_link_libraries(pwu
-    PUBLIC WIL::WIL
     PRIVATE Version.lib
 )

@@ -1,12 +1,11 @@
 #pragma once
 
+#include "pwu/ErrorHandling.hpp"
 #include "pwu/String.hpp"
 
 #include <algorithm>
 #include <cstdint>
 #include <limits>
-
-#include <wil/result.h>
 
 #include <Windows.h>
 
@@ -54,7 +53,7 @@ void U16ToCodePage(
             nullptr,
             nullptr
         );
-        THROW_LAST_ERROR_IF(outputChunkSize == 0);
+        ThrowLastWin32ErrorIf(outputChunkSize == 0);
         inputCharOffset += inputChunkCharCount;
         outputSize += outputChunkSize;
     }
@@ -94,7 +93,7 @@ void U16ToCodePage(
             nullptr,
             nullptr
         );
-        THROW_LAST_ERROR_IF(bytesWritten == 0);
+        ThrowLastWin32ErrorIf(bytesWritten == 0);
         inputCharOffset += inputChunkCharCount;
         outputSizeOffset += bytesWritten;
     }
@@ -134,7 +133,7 @@ void CodePageToU16(
             nullptr,
             0
         );
-        THROW_LAST_ERROR_IF(outputChunkCharCount == 0);
+        ThrowLastWin32ErrorIf(outputChunkCharCount == 0);
         inputSizeOffset += inputChunkSize;
         outputCharCount += outputChunkCharCount;
     }
@@ -172,7 +171,7 @@ void CodePageToU16(
             outputChunkAddress,
             outputChunkCharCount
         );
-        THROW_LAST_ERROR_IF(charsWritten == 0);
+        ThrowLastWin32ErrorIf(charsWritten == 0);
         inputSizeOffset += inputChunkSize;
         outputCharCountOffset += charsWritten;
     }

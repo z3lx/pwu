@@ -1,6 +1,5 @@
 #include "pwu/Version.hpp"
-
-#include <wil/result.h>
+#include "pwu/ErrorHandling.hpp"
 
 #include <cstdint>
 #include <filesystem>
@@ -14,10 +13,10 @@ Version GetFileVersion(const std::filesystem::path& filePath) {
         filePath.c_str(),
         nullptr
     );
-    THROW_LAST_ERROR_IF(infoSize == 0);
+    ThrowLastWin32ErrorIf(infoSize == 0);
 
     std::vector<uint8_t> infoBuffer(infoSize, 0);
-    THROW_IF_WIN32_BOOL_FALSE(GetFileVersionInfoW(
+    ThrowIfWin32BoolFalse(GetFileVersionInfoW(
         filePath.c_str(),
         0,
         infoBuffer.size(),
@@ -26,7 +25,7 @@ Version GetFileVersion(const std::filesystem::path& filePath) {
 
     PVOID queryBuffer = nullptr;
     UINT queryBufferSize = 0;
-    THROW_IF_WIN32_BOOL_FALSE(VerQueryValueW(
+    ThrowIfWin32BoolFalse(VerQueryValueW(
         infoBuffer.data(),
         L"\\",
         &queryBuffer,
@@ -34,7 +33,7 @@ Version GetFileVersion(const std::filesystem::path& filePath) {
     ));
 
     const auto& info = *static_cast<VS_FIXEDFILEINFO*>(queryBuffer);
-    THROW_WIN32_IF(ERROR_INVALID_DATA, info.dwSignature != 0xFEEF04BD);
+    ThrowWin32ErrorIf(ERROR_INVALID_DATA, info.dwSignature != 0xFEEF04BD);
 
     return Version {
         HIWORD(info.dwFileVersionMS),

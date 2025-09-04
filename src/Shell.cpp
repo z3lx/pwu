@@ -1,6 +1,5 @@
 #include "pwu/Shell.hpp"
-
-#include <wil/result.h>
+#include "pwu/ErrorHandling.hpp"
 
 #include <string_view>
 #include <type_traits>
@@ -29,7 +28,7 @@ void ShellExecute(const StringView operation, const StringView file) {
         nullptr,
         SW_SHOWNORMAL
     ));
-    THROW_LAST_ERROR_IF(code <= 32);
+    pwu::ThrowLastWin32ErrorIf(code <= 32);
 }
 } // namespace
 

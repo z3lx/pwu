@@ -26,6 +26,7 @@ set(HEADER_FILES
     include/pwu/FileInl.hpp
     include/pwu/Loader.hpp
     include/pwu/LoaderInl.hpp
+    include/pwu/Resource.hpp
     include/pwu/ScopeExit.hpp
     include/pwu/Shell.hpp
     include/pwu/String.hpp

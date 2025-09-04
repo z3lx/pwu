@@ -3,7 +3,8 @@
 #include <type_traits>
 #include <utility>
 
-// TS v3 std::experimental::scope_exit
+// std::experimental::scope_exit (Library Fundamentals TS v3)
+// Note: constructors use C++17 guaranteed copy elision
 
 namespace pwu {
 template <typename Callable>
@@ -20,12 +21,12 @@ public:
             std::is_nothrow_constructible_v<Callable, T> ||
             std::is_nothrow_constructible_v<Callable, T&>
         )
-        : callable([&callable]() -> decltype(auto) {
+        : callable([&callable]() -> Callable {
             if constexpr (!std::is_lvalue_reference_v<T> &&
                 std::is_nothrow_constructible_v<Callable, T>) {
-                return std::forward<T>(callable);
+                return Callable(std::forward<T>(callable));
             } else try {
-                return callable;
+                return Callable(callable);
             } catch (...) {
                 callable();
                 throw;
@@ -42,11 +43,11 @@ public:
             std::is_nothrow_move_constructible_v<Callable> ||
             std::is_copy_constructible_v<Callable>
         )
-        : callable([&other]() -> decltype(auto) {
+        : callable([&other]() -> Callable {
             if constexpr (std::is_nothrow_move_constructible_v<Callable>) {
-                return std::forward<Callable>(other.callable);
+                return Callable(std::forward<Callable>(other.callable));
             } else {
-                return other.callable;
+                return Callable(other.callable);
             }
         }())
         , active { other.active } {

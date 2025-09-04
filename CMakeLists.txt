@@ -31,6 +31,7 @@ set(HEADER_FILES
     include/pwu/String.hpp
     include/pwu/StringInl.hpp
     include/pwu/TracedException.hpp
+    include/pwu/UniqueResource.hpp
     include/pwu/Version.hpp
     include/pwu/VirtualKey.hpp
 )

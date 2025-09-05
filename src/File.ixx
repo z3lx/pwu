@@ -1,19 +1,31 @@
-#pragma once
+module;
 
-#include "pwu/ErrorHandling.hpp"
-#include "pwu/File.hpp"
-
-#include <algorithm>
-#include <cstdint>
-#include <limits>
-
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-namespace pwu {
-namespace detail {
-constexpr size_t maxBufferChunkSize = (std::numeric_limits<DWORD>::max)();
-} // namespace detail
+export module pwu:File;
 
+import :ErrorHandling;
+
+import std;
+
+export namespace pwu {
+template <typename ContiguousContainer>
+ContiguousContainer ReadFile(HANDLE fileHandle);
+
+template <typename ContiguousContainer>
+void ReadFile(HANDLE fileHandle, ContiguousContainer& buffer);
+
+template <typename ContiguousContainer>
+void WriteFile(HANDLE fileHandle, const ContiguousContainer& buffer);
+
+template <typename ContiguousContainer>
+void AppendFile(HANDLE fileHandle, const ContiguousContainer& buffer);
+} // namespace pwu
+
+constexpr size_t maxBufferChunkSize = (std::numeric_limits<DWORD>::max)();
+
+namespace pwu {
 template <typename ContiguousContainer>
 ContiguousContainer ReadFile(const HANDLE fileHandle) {
     ContiguousContainer buffer {};
@@ -39,9 +51,9 @@ void ReadFile(const HANDLE fileHandle, ContiguousContainer& buffer) {
     // Read file to buffer
     for (size_t bufferSizeOffset = 0; bufferSizeOffset < bufferSize;) {
         void* bufferChunkAddress =
-            reinterpret_cast<uint8_t*>(buffer.data()) + bufferSizeOffset;
+            reinterpret_cast<std::uint8_t*>(buffer.data()) + bufferSizeOffset;
         const DWORD bufferChunkSize = static_cast<DWORD>((std::min)(
-            detail::maxBufferChunkSize,
+            maxBufferChunkSize,
             bufferSize - bufferSizeOffset
         ));
         DWORD bytesRead = 0;
@@ -74,7 +86,7 @@ void AppendFile(const HANDLE fileHandle, const ContiguousContainer& buffer) {
         const void* bufferChunkAddress =
             reinterpret_cast<const uint8_t*>(buffer.data()) + bufferSizeOffset;
         const DWORD bufferChunkSize = static_cast<DWORD>((std::min)(
-            detail::maxBufferChunkSize,
+            maxBufferChunkSize,
             bufferSize - bufferSizeOffset
         ));
         DWORD bytesTransferred = 0;

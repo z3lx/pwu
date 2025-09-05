@@ -1,12 +1,8 @@
-#pragma once
+export module pwu:ScopeExit;
 
-#include <type_traits>
-#include <utility>
+import std;
 
-// std::experimental::scope_exit (Library Fundamentals TS v3)
-// Note: constructors use C++17 guaranteed copy elision
-
-namespace pwu {
+export namespace pwu {
 template <typename Callable>
 requires std::is_nothrow_invocable_v<Callable>
 class ScopeExit {

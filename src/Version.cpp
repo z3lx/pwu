@@ -1,11 +1,14 @@
-#include "pwu/Version.hpp"
-#include "pwu/ErrorHandling.hpp"
+module;
 
-#include <cstdint>
-#include <filesystem>
-#include <vector>
-
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+
+module pwu:Version;
+
+import :Version;
+import :ErrorHandling;
+
+import std;
 
 namespace pwu {
 Version GetFileVersion(const std::filesystem::path& filePath) {
@@ -15,7 +18,7 @@ Version GetFileVersion(const std::filesystem::path& filePath) {
     );
     ThrowLastWin32ErrorIf(infoSize == 0);
 
-    std::vector<uint8_t> infoBuffer(infoSize, 0);
+    std::vector<std::uint8_t> infoBuffer(infoSize, 0);
     ThrowIfWin32BoolFalse(GetFileVersionInfoW(
         filePath.c_str(),
         0,

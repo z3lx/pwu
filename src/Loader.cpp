@@ -1,11 +1,14 @@
-#include "pwu/Loader.hpp"
+module;
 
-#include <array>
-#include <filesystem>
-#include <span>
-#include <string_view>
-
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+
+module pwu:Loader;
+
+import :Loader;
+import :ErrorHandling;
+
+import std;
 
 namespace fs = std::filesystem;
 

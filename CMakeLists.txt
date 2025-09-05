@@ -1,27 +1,21 @@
 cmake_minimum_required(VERSION 3.28.2)
 project(pwu LANGUAGES CXX)
 
-set(HEADER_DIRS
-    include
-)
-
-set(HEADER_FILES
-    include/pwu/Console.hpp
-    include/pwu/Dialogue.hpp
-    include/pwu/ErrorHandling.hpp
-    include/pwu/File.hpp
-    include/pwu/FileInl.hpp
-    include/pwu/Loader.hpp
-    include/pwu/LoaderInl.hpp
-    include/pwu/Resource.hpp
-    include/pwu/ScopeExit.hpp
-    include/pwu/Shell.hpp
-    include/pwu/String.hpp
-    include/pwu/StringInl.hpp
-    include/pwu/TracedException.hpp
-    include/pwu/UniqueResource.hpp
-    include/pwu/Version.hpp
-    include/pwu/VirtualKey.hpp
+set(MODULE_FILES
+    src/Console.ixx
+    src/Dialogue.ixx
+    src/ErrorHandling.ixx
+    src/File.ixx
+    src/Loader.ixx
+    src/pwu.ixx
+    src/Resource.ixx
+    src/ScopeExit.ixx
+    src/Shell.ixx
+    src/String.ixx
+    src/TracedException.ixx
+    src/UniqueResource.ixx
+    src/Version.ixx
+    src/VirtualKey.ixx
 )
 
 set(SOURCE_FILES
@@ -41,13 +35,15 @@ target_compile_features(pwu PUBLIC cxx_std_23)
 set_target_properties(pwu PROPERTIES
     CXX_STANDARD_REQUIRED TRUE
     CXX_EXTENSIONS FALSE
+    CXX_SCAN_FOR_MODULES MMH_BUILD_MODULES
+    CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN TRUE
 )
 
 target_sources(pwu
-    PUBLIC
-        FILE_SET HEADERS
-        BASE_DIRS ${HEADER_DIRS}
-        FILES ${HEADER_FILES}
+    PRIVATE
+        FILE_SET CXX_MODULES
+        FILES ${MODULE_FILES}
     PRIVATE
         ${SOURCE_FILES}
 )

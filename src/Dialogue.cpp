@@ -1,16 +1,15 @@
-#include "pwu/Dialogue.hpp"
-#include "pwu/ErrorHandling.hpp"
+module;
 
-#include <array>
-#include <filesystem>
-#include <optional>
-#include <span>
-#include <string>
-#include <string_view>
-#include <type_traits>
-
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <commdlg.h>
+
+module pwu:Dialogue;
+
+import :Dialogue;
+import :ErrorHandling;
+
+import std;
 
 namespace {
 template <typename StringView>

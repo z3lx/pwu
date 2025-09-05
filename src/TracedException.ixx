@@ -1,14 +1,8 @@
-#pragma once
+export module pwu:TracedException;
 
-#include <exception>
-#include <memory>
-#include <source_location>
-#include <span>
-#include <string_view>
-#include <type_traits>
-#include <utility>
+import std;
 
-namespace pwu {
+export namespace pwu {
 class TracedException final : public std::exception {
 public:
     TracedException(
@@ -48,7 +42,7 @@ void CatchThrowTraced(
     }
 }
 
-inline void ThrowCaughtTraced(
+void ThrowCaughtTraced(
     const std::source_location location = std::source_location::current()) {
     const std::exception_ptr exception = std::current_exception();
     try {

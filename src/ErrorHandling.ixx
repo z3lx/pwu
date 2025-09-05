@@ -1,15 +1,16 @@
-#pragma once
+module;
 
-#include "pwu/TracedException.hpp"
-
-#include <source_location>
-
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
 #define CURRENT_LOCATION \
     std::source_location location = std::source_location::current()
 
-namespace pwu {
+export module pwu:ErrorHandling;
+
+import std;
+
+export namespace pwu {
 void ThrowWin32Error(DWORD error, CURRENT_LOCATION);
 void ThrowLastWin32Error(CURRENT_LOCATION);
 

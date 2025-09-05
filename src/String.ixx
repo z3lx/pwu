@@ -1,16 +1,51 @@
-#pragma once
+module;
 
-#include "pwu/ErrorHandling.hpp"
-#include "pwu/String.hpp"
-
-#include <algorithm>
-#include <cstdint>
-#include <limits>
-
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-namespace pwu {
-namespace detail {
+export module pwu:String;
+
+import :ErrorHandling;
+
+import std;
+
+export namespace pwu {
+template <
+    typename InputContiguousContainer,
+    typename OutputContiguousContainer
+>
+void U16ToU8(
+    const InputContiguousContainer& inputBuffer,
+    OutputContiguousContainer& outputBuffer
+);
+
+template <
+    typename InputContiguousContainer,
+    typename OutputContiguousContainer = std::u8string
+>
+[[nodiscard]] OutputContiguousContainer U16ToU8(
+    const InputContiguousContainer& inputBuffer
+);
+
+template <
+    typename InputContiguousContainer,
+    typename OutputContiguousContainer
+>
+void U8ToU16(
+    const InputContiguousContainer& inputBuffer,
+    OutputContiguousContainer& outputBuffer
+);
+
+template <
+    typename InputContiguousContainer,
+    typename OutputContiguousContainer = std::u16string
+>
+[[nodiscard]] OutputContiguousContainer U8ToU16(
+    const InputContiguousContainer& inputBuffer
+);
+} // namespace pwu
+
 template <typename T>
 T CeilDiv(const T a, const T b) noexcept {
     return (a + b - 1) / b;
@@ -53,7 +88,7 @@ void U16ToCodePage(
             nullptr,
             nullptr
         );
-        ThrowLastWin32ErrorIf(outputChunkSize == 0);
+        pwu::ThrowLastWin32ErrorIf(outputChunkSize == 0);
         inputCharOffset += inputChunkCharCount;
         outputSize += outputChunkSize;
     }
@@ -79,8 +114,8 @@ void U16ToCodePage(
         const auto outputChunkAddress =
             reinterpret_cast<char*>(outputBuffer.data()) +
             outputSizeOffset;
-        const auto outputChunkSize = static_cast<int>((std::min)(
-            static_cast<size_t>((std::numeric_limits<int>::max)()),
+        const auto outputChunkSize = static_cast<int>(std::min(
+            static_cast<size_t>(std::numeric_limits<int>::max()),
             outputSize - outputSizeOffset
         ));
         const int bytesWritten = WideCharToMultiByte(
@@ -93,7 +128,7 @@ void U16ToCodePage(
             nullptr,
             nullptr
         );
-        ThrowLastWin32ErrorIf(bytesWritten == 0);
+        pwu::ThrowLastWin32ErrorIf(bytesWritten == 0);
         inputCharOffset += inputChunkCharCount;
         outputSizeOffset += bytesWritten;
     }
@@ -133,7 +168,7 @@ void CodePageToU16(
             nullptr,
             0
         );
-        ThrowLastWin32ErrorIf(outputChunkCharCount == 0);
+        pwu::ThrowLastWin32ErrorIf(outputChunkCharCount == 0);
         inputSizeOffset += inputChunkSize;
         outputCharCount += outputChunkCharCount;
     }
@@ -159,8 +194,8 @@ void CodePageToU16(
         const auto outputChunkAddress =
             reinterpret_cast<wchar_t*>(outputBuffer.data()) +
             outputCharCountOffset;
-        const auto outputChunkCharCount = static_cast<int>((std::min)(
-            static_cast<size_t>((std::numeric_limits<int>::max)()),
+        const auto outputChunkCharCount = static_cast<int>(std::min(
+            static_cast<size_t>(std::numeric_limits<int>::max()),
             outputCharCount - outputCharCountOffset
         ));
         const int charsWritten = MultiByteToWideChar(
@@ -171,7 +206,7 @@ void CodePageToU16(
             outputChunkAddress,
             outputChunkCharCount
         );
-        ThrowLastWin32ErrorIf(charsWritten == 0);
+        pwu::ThrowLastWin32ErrorIf(charsWritten == 0);
         inputSizeOffset += inputChunkSize;
         outputCharCountOffset += charsWritten;
     }
@@ -191,7 +226,7 @@ int U8InputChunkSize(
     const InputContiguousContainer& inputBuffer,
     const size_t inputSizeOffset) {
     // 1 to 1 byte to character conversion ratio worst case scenario
-    constexpr int maxInputChunkSize = (std::numeric_limits<int>::max)();
+    constexpr int maxInputChunkSize = std::numeric_limits<int>::max();
 
     using InputElementT = typename InputContiguousContainer::value_type;
     const size_t inputSize = inputBuffer.size() * sizeof(InputElementT);
@@ -207,9 +242,9 @@ int U8InputChunkSize(
     const char* lastChar =
         reinterpret_cast<const char*>(inputBuffer.data()) +
         inputSizeOffset + maxInputChunkSize - 1;
-    uint8_t dropped = 0;
+    std::uint8_t dropped = 0;
     if (isContinuationByte(lastChar[1])) {
-        for (uint8_t i = 0; i < 3; ++i) {
+        for (std::uint8_t i = 0; i < 3; ++i) {
             ++dropped;
             if (!isContinuationByte(lastChar[-i])) {
                 break;
@@ -234,7 +269,7 @@ int U16InputChunkCharCount(
     const size_t inputCharOffset) {
     // 1 to 3 character to byte conversion ratio worst case scenario
     constexpr int maxInputChunkCharCount =
-        (std::numeric_limits<int>::max)() / 3;
+        std::numeric_limits<int>::max() / 3;
 
     using InputElementT = typename InputContiguousContainer::value_type;
     const size_t inputCharCount =
@@ -251,22 +286,28 @@ int U16InputChunkCharCount(
     return IS_HIGH_SURROGATE(*lastChar) ?
         maxInputChunkCharCount - 1 : maxInputChunkCharCount;
 };
-} // namespace detail
 
-template <typename InputContiguousContainer, typename OutputContiguousContainer>
+namespace pwu {
+template <
+    typename InputContiguousContainer,
+    typename OutputContiguousContainer
+>
 void U16ToU8(
     const InputContiguousContainer& inputBuffer,
     OutputContiguousContainer& outputBuffer) {
-    detail::U16ToCodePage(
+    U16ToCodePage(
         CP_UTF8,
         inputBuffer,
         outputBuffer,
-        detail::U16InputChunkAddress<InputContiguousContainer>,
-        detail::U16InputChunkCharCount<InputContiguousContainer>
+        U16InputChunkAddress<InputContiguousContainer>,
+        U16InputChunkCharCount<InputContiguousContainer>
     );
 }
 
-template <typename InputContiguousContainer, typename OutputContiguousContainer>
+template <
+    typename InputContiguousContainer,
+    typename OutputContiguousContainer
+>
 OutputContiguousContainer U16ToU8(
     const InputContiguousContainer& inputBuffer) {
     OutputContiguousContainer outputBuffer;
@@ -274,20 +315,26 @@ OutputContiguousContainer U16ToU8(
     return outputBuffer;
 }
 
-template <typename InputContiguousContainer, typename OutputContiguousContainer>
+template <
+    typename InputContiguousContainer,
+    typename OutputContiguousContainer
+>
 void U8ToU16(
     const InputContiguousContainer& inputBuffer,
     OutputContiguousContainer& outputBuffer) {
-    detail::CodePageToU16(
+    CodePageToU16(
         CP_UTF8,
         inputBuffer,
         outputBuffer,
-        detail::U8InputChunkAddress<InputContiguousContainer>,
-        detail::U8InputChunkSize<InputContiguousContainer>
+        U8InputChunkAddress<InputContiguousContainer>,
+        U8InputChunkSize<InputContiguousContainer>
     );
 }
 
-template <typename InputContiguousContainer, typename OutputContiguousContainer>
+template <
+    typename InputContiguousContainer,
+    typename OutputContiguousContainer
+>
 OutputContiguousContainer U8ToU16(
     const InputContiguousContainer& inputBuffer) {
     OutputContiguousContainer outputBuffer;

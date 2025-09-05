@@ -1,9 +1,14 @@
-#include "pwu/Console.hpp"
+module;
 
-#include <iostream>
-
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <conio.h>
+
+module pwu:Console;
+
+import :Console;
+
+import std;
 
 namespace pwu {
 void Pause() noexcept {

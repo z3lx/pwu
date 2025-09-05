@@ -1,15 +1,8 @@
-#include "pwu/TracedException.hpp"
+module pwu:TracedException;
 
-#include <exception>
-#include <format>
-#include <iterator>
-#include <source_location>
-#include <span>
-#include <string>
-#include <string_view>
-#include <thread>
-#include <typeinfo>
-#include <vector>
+import :TracedException;
+
+import std;
 
 namespace {
 void AppendOriginal(std::string& message, const std::exception* original) {

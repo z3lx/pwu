@@ -1,13 +1,16 @@
-#include "pwu/Shell.hpp"
-#include "pwu/ErrorHandling.hpp"
+module;
 
-#include <string_view>
-#include <type_traits>
-
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <shellapi.h>
-
 #undef ShellExecute
+
+module pwu:Shell;
+
+import :Shell;
+import :ErrorHandling;
+
+import std;
 
 namespace {
 template <typename StringView>

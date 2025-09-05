@@ -1,13 +1,13 @@
-#pragma once
+module;
 
-#include <filesystem>
-#include <optional>
-#include <span>
-#include <string_view>
-
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-namespace pwu {
+export module pwu:Dialogue;
+
+import std;
+
+export namespace pwu {
 enum class MessageBoxButton : long {
     AbortRetryIgnore = MB_ABORTRETRYIGNORE,
     CancelTryContinue = MB_CANCELTRYCONTINUE,

@@ -1,12 +1,8 @@
-#pragma once
+export module pwu:UniqueResource;
 
-#include <type_traits>
-#include <utility>
+import std;
 
-// std::experimental::unique_resource (Library Fundamentals TS v3)
-// Note: constructors use C++17 guaranteed copy elision
-
-namespace pwu {
+export namespace pwu {
 template <typename R, typename D>
 requires (
     (std::is_object_v<R> || std::is_lvalue_reference_v<R>) &&

@@ -1,10 +1,14 @@
-#include "pwu/ErrorHandling.hpp"
+module;
 
-#include <exception>
-#include <source_location>
-#include <system_error>
-
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+
+module pwu:ErrorHandling;
+
+import :ErrorHandling;
+import :TracedException;
+
+import std;
 
 namespace pwu {
 void ThrowWin32Error(

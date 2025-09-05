@@ -1,8 +1,8 @@
-#pragma once
+export module pwu:Shell;
 
-#include <string_view>
+import std;
 
-namespace pwu {
+export namespace pwu {
 void OpenUrl(std::string_view url);
 void OpenUrl(std::wstring_view url);
 } // namespace pwu

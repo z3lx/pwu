@@ -1,15 +1,34 @@
-#pragma once
+module;
 
-#include "pwu/ErrorHandling.hpp"
-#include "pwu/Loader.hpp"
-#include "pwu/Resource.hpp"
-#include "pwu/ScopeExit.hpp"
-
-#include <algorithm>
-#include <cstdint>
-#include <filesystem>
-
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+
+export module pwu:Loader;
+
+import :ErrorHandling;
+import :ScopeExit;
+import :Resource;
+
+import std;
+
+export namespace pwu {
+std::filesystem::path GetCurrentModuleFilePath();
+
+std::filesystem::path GetModuleFilePath(HMODULE module);
+std::filesystem::path GetModuleFilePath(const void* address);
+std::filesystem::path GetModuleFilePath(std::string_view moduleName);
+std::filesystem::path GetModuleFilePath(std::wstring_view moduleName);
+
+void LoadRemoteLibrary(
+    HANDLE processHandle,
+    const std::filesystem::path& libraryPath
+);
+template <typename Container>
+void LoadRemoteLibrary(
+    HANDLE processHandle,
+    const Container& libraryPaths
+);
+} // namespace pwu
 
 namespace pwu {
 inline std::filesystem::path GetCurrentModuleFilePath() {

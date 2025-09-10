@@ -51,7 +51,7 @@ set_target_properties(pwu PROPERTIES
 )
 
 target_sources(pwu
-    PRIVATE
+    PUBLIC
         FILE_SET CXX_MODULES
         FILES ${MODULE_FILES}
     PRIVATE

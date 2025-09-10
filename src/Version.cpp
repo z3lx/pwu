@@ -3,7 +3,7 @@ module;
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-module pwu:Version;
+module pwu;
 
 import :Version;
 import :ErrorHandling;

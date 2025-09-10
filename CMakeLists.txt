@@ -1,4 +1,13 @@
-cmake_minimum_required(VERSION 3.28.2)
+cmake_minimum_required(VERSION 3.30)
+
+if (NOT (CMAKE_GENERATOR STREQUAL "Ninja") AND
+        NOT (CMAKE_GENERATOR STREQUAL "Ninja Multi-Config"))
+    message(FATAL_ERROR "This project requires the Ninja generator.")
+endif()
+
+# https://github.com/Kitware/CMake/blob/v3.30.0/Help/dev/experimental.rst
+set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "0e5b6991-d74f-4b3d-a41c-cf096e0b2508")
+
 project(pwu LANGUAGES CXX)
 
 set(MODULE_FILES
@@ -36,6 +45,7 @@ set_target_properties(pwu PROPERTIES
     CXX_STANDARD_REQUIRED TRUE
     CXX_EXTENSIONS FALSE
     CXX_SCAN_FOR_MODULES TRUE
+    CXX_MODULE_STD TRUE
     CXX_VISIBILITY_PRESET hidden
     VISIBILITY_INLINES_HIDDEN TRUE
 )

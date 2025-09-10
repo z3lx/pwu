@@ -5,7 +5,7 @@ module;
 #include <shellapi.h>
 #undef ShellExecute
 
-module pwu:Shell;
+module pwu;
 
 import :Shell;
 import :ErrorHandling;

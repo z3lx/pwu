@@ -4,7 +4,7 @@ module;
 #include <Windows.h>
 #include <conio.h>
 
-module pwu:Console;
+module pwu;
 
 import :Console;
 

@@ -4,7 +4,7 @@ module;
 #include <Windows.h>
 #include <commdlg.h>
 
-module pwu:Dialogue;
+module pwu;
 
 import :Dialogue;
 import :ErrorHandling;

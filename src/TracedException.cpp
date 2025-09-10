@@ -1,4 +1,4 @@
-module pwu:TracedException;
+module pwu;
 
 import :TracedException;
 
